@@ -1,0 +1,59 @@
+---
+services:
+  broker:
+    image: confluentinc/cp-kafka:7.6.1
+    networks:
+      - mynet
+    hostname: broker
+    container_name: broker
+    user: "root"
+    ports:
+      - "7802:7802"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_HEAP_OPTS: "-Xmx2g -Xms1g"  # Increase the heap size
+      KAFKA_LISTENERS: 'INTERNAL://broker:29092,PLAINTEXT_HOST://localhost:9092,EXTERNAL://0.0.0.0:7802,CONTROLLER://broker:29093'
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker:29092,PLAINTEXT_HOST://localhost:9092,EXTERNAL://172.22.56.120:7802
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SSL,PLAINTEXT_HOST:SSL,EXTERNAL:SSL,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'      
+       #Security changes for SSL 
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/kafka.broker.keystore.jks
+      KAFKA_SSL_KEYSTORE_PASSWORD: keypass
+      KAFKA_SSL_KEY_PASSWORD: keypass
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/kafka.broker.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: keypass
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: INFO
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'    
+    volumes:
+      - /home/viadmin/kafka/secrets:/etc/kafka
+      - /home/viadmin/kafka/secrets/kafka.broker.keystore.jks:/etc/kafka/kafka.broker.keystore.jks
+      - /home/viadmin/kafka/secrets/kafka.broker.truststore.jks:/etc/kafka/kafka.broker.truststore.jks        
+    command: ["sh", "-c", "chown -R appuser:appuser /var/lib/kafka/data && exec /etc/confluent/docker/run"]
+  
+  spring-boot-kafka-server:
+    image: spring-boot-kafka-server
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - broker
+    networks:
+      - mynet
+    volumes:
+      - /home/viadmin/kafka/secrets:/etc/kafka/secrets
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
