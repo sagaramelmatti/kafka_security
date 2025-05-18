@@ -1,0 +1,24 @@
+server:
+  port: 8080
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092,broker:29092,172.22.56.120:7802
+    properties:
+      security:
+        protocol: SASL_PLAINTEXT
+      sasl:
+        mechanism: PLAIN
+        jaas:
+          config: >
+            org.apache.kafka.common.security.plain.PlainLoginModule required
+            username="admin"
+            password="admin-secret";
+    consumer:
+      group-id: group_id
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic: message-topic
