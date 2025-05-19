@@ -23,3 +23,11 @@ Key Points:
 Bootstrap Servers: The Kafka broker addresses include localhost, the internal Docker network (broker:29092), and the external IP (172.22.56.120:7802).
 Security Configuration: SASL_PLAINTEXT is configured with the PLAIN mechanism, and credentials are provided via the jaas config.
 Consumer and Producer Settings: De serializers and serializers are configured for JSON and string data, and the consumer group ID is set.
+
+------------------------------------------------
+Steps to run Kafka server:
+I am running server application in ubuntu server :
+
+1) Create Volume on host system :
+
+/home/viadmin/kafka/secrets/
